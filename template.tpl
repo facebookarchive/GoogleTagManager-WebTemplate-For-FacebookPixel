@@ -1,4 +1,4 @@
-___INFO___
+﻿___INFO___
 
 {
   "displayName": "Facebook Pixel",
@@ -161,6 +161,24 @@ ___TEMPLATE_PARAMETERS___
     ]
   },
   {
+    "type": "SELECT",
+    "name": "consent",
+    "displayName": "Consent Granted (GDPR)",
+    "macrosInSelect": true,
+    "selectItems": [
+      {
+        "value": true,
+        "displayValue": "True"
+      },
+      {
+        "value": false,
+        "displayValue": "False"
+      }
+    ],
+    "simpleValueType": true,
+    "help": "If you set Consent Granted to <strong>false</strong>, the pixel will not send any hits until a tag is fired where Consent Granted is set to <strong>true</strong>. See <a href=\"https://developers.facebook.com/docs/facebook-pixel/implementation/gdpr/\">this article</a> for more information."
+  },
+  {
     "enablingConditions": [
       {
         "paramName": "advancedMatching",
@@ -244,6 +262,20 @@ ___TEMPLATE_PARAMETERS___
     "groupStyle": "ZIPPY_CLOSED",
     "type": "GROUP",
     "subParams": [
+      {
+        "type": "SELECT",
+        "name": "objectPropertiesFromVariable",
+        "displayName": "Load Properties From Variable",
+        "macrosInSelect": true,
+        "selectItems": [
+          {
+            "value": false,
+            "displayValue": "False"
+          }
+        ],
+        "simpleValueType": true,
+        "help": "You can use a variable that returns a JavaScript object with the properties you want to use. This object will be merged with any additional properties you add via the table below. Any conflicts will be resolved in favor of the properties you add to the table."
+      },
       {
         "displayName": "",
         "name": "objectPropertyList",
@@ -693,13 +725,29 @@ ___WEB_PERMISSIONS___
       "isEditedByUser": true
     },
     "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "logging",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "environments",
+          "value": {
+            "type": 1,
+            "string": "debug"
+          }
+        }
+      ]
+    },
+    "isRequired": true
   }
 ]
 
 
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
-
-/* GTMTEMPLATESCOM_CHECKSUM:[5669869676658688,1562598029120,29fe6a11b354538a0884d669628607c2] */
 
 const createQueue = require('createQueue');
 const callInWindow = require('callInWindow');
@@ -708,6 +756,8 @@ const copyFromWindow = require('copyFromWindow');
 const setInWindow = require('setInWindow');
 const injectScript = require('injectScript');
 const makeTableMap = require('makeTableMap');
+const getType = require('getType');
+const log = require('logToConsole');
 
 const initIds = copyFromWindow('_fbq_gtm_ids') || [];
 const pixelIds = data.pixelId;
@@ -758,10 +808,15 @@ const fbq = getFbq();
 const userProps = data.userPropertyList ? makeTableMap(data.userPropertyList, 'name', 'value') : {};
 const cidParams = data.advancedMatchingList ? makeTableMap(data.advancedMatchingList, 'name', 'value') : {};
 const objectProps = data.objectPropertyList ? makeTableMap(data.objectPropertyList, 'name', 'value') : {};
+const objectPropsFromVar = getType(data.objectPropertiesFromVariable) === 'object' ? data.objectPropertiesFromVariable : {};
+const finalObjectProps = mergeObj(data.objectPropertiesFromVariable, objectProps);
 const command = data.eventName !== 'Custom' ? 'trackSingle' : 'trackSingleCustom';
 const eventName = data.eventName !== 'Custom' ? data.eventName : data.customEventName;
 const uid = data.userId ? {uid: data.userId} : {};
 const initObj = mergeObj(uid, cidParams);
+const consent = data.consent === false ? 'revoke' : 'grant';
+
+fbq('consent', consent);
 
 // Handle multiple, comma-separated pixel IDs,
 // and initialize each ID if not done already.
