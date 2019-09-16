@@ -2,10 +2,12 @@ homepage: "https://www.simoahava.com/"
 documentation: "https://www.simoahava.com/analytics/create-facebook-pixel-custom-tag-template/"
 versions:
   # Latest version
+  - sha: 4a500b0ea7ccd44c50a32a0283ef965b6096e6c8
+  - changeNotes: Update LICENSE.
+  # Older versions
   - sha: ff7bf31a0777e22a370d6371607022fe2a6d1b7c
     changeNotes: |2
       Add support for "consent" command.
       Add support for using a variable to populate object properties.
-  # Older versions
   - sha: e1206f9c677fe67348c6678c4669952cb0c0b97b
     changeNotes: Initial release.
