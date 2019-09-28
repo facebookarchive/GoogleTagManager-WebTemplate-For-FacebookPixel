@@ -1,10 +1,19 @@
-﻿___INFO___
+﻿___TERMS_OF_SERVICE___
+
+By creating or modifying this file you agree to Google Tag Manager's Community
+Template Gallery Developer Terms of Service available at
+https://developers.google.com/tag-manager/gallery-tos (or such other URL as
+Google may provide), as modified from time to time.
+
+
+___INFO___
 
 {
   "displayName": "Facebook Pixel",
   "__wm": "VGVtcGxhdGUtQXV0aG9yX0ZhY2Vib29rLVNpbW8tQWhhdmE=",
   "description": "This is an unofficial Google Tag Manager template for the Facebook Pixel.",
   "securityGroups": [],
+  "categories": ["ADVERTISING", "ANALYTICS"],
   "id": "cvt_temp_public_id",
   "type": "TAG",
   "version": 1,
