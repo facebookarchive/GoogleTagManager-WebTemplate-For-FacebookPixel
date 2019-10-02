@@ -2,11 +2,9 @@ homepage: "https://www.simoahava.com/"
 documentation: "https://www.simoahava.com/analytics/create-facebook-pixel-custom-tag-template/"
 versions:
   # Latest version
-  - sha: d7bad4f7a6e39c72dbc72afc7773d7fb8fdc358c
-    changeNotes: Update template metadata.
+  - sha: 16f09061f5e70563f10d4aa9f0a1b9412e19f35c
+    changeNotes: Update logo
   # Older versions
-  - sha: 4a500b0ea7ccd44c50a32a0283ef965b6096e6c8
-    changeNotes: Update LICENSE.
   - sha: ff7bf31a0777e22a370d6371607022fe2a6d1b7c
     changeNotes: |2
       Add support for "consent" command.
