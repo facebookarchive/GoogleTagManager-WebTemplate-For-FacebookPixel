@@ -2,11 +2,13 @@ homepage: "https://www.simoahava.com/"
 documentation: "https://www.simoahava.com/analytics/create-facebook-pixel-custom-tag-template/"
 versions:
   # Latest version
+  - sha: b5cc43efe1bdbb68039c6825e920e709c06149d5
+    changeNotes: Fix bug where object properties were not correctly built.
+  # Older versions
   - sha: cd5ae96875fd9fa0b5eccfb0e575c73b522eb1d4
     changeNotes: |2
       Fix object properties to merge variable and table.
       Update event name selection to allow for variable as well (BREAKING CHANGE).
-  # Older versions
   - sha: 16f09061f5e70563f10d4aa9f0a1b9412e19f35c
     changeNotes: Update logo
   - sha: ff7bf31a0777e22a370d6371607022fe2a6d1b7c
