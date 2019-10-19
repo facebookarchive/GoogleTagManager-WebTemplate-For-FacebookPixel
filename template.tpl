@@ -837,7 +837,7 @@ const userProps = data.userPropertyList ? makeTableMap(data.userPropertyList, 'n
 const cidParams = data.advancedMatchingList ? makeTableMap(data.advancedMatchingList, 'name', 'value') : {};
 const objectProps = data.objectPropertyList ? makeTableMap(data.objectPropertyList, 'name', 'value') : {};
 const objectPropsFromVar = getType(data.objectPropertiesFromVariable) === 'object' ? data.objectPropertiesFromVariable : {};
-const finalObjectProps = mergeObj(data.objectPropertiesFromVariable, objectProps);
+const finalObjectProps = mergeObj(objectPropsFromVar, objectProps);
 const eventName = data.eventName === 'custom' ? data.customEventName : (data.eventName === 'variable' ? data.variableEventName : data.standardEventName);
 const command = standardEventNames.indexOf(eventName) === -1 ? 'trackSingleCustom' : 'trackSingle';
 const uid = data.userId ? {uid: data.userId} : {};
@@ -867,7 +867,7 @@ pixelIds.split(',').forEach(pixelId => {
     }
     
   }
-  
+
   // Call the fbq() method with the parameters defined earlier
   fbq(command, pixelId, eventName, finalObjectProps);
 });
