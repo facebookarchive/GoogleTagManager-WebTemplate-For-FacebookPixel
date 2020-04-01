@@ -230,7 +230,7 @@ ___TEMPLATE_PARAMETERS___
               },
               {
                 "displayValue": "Country",
-                "value": "country"
+                "value": "cn"
               },
               {
                 "displayValue": "Date of Birth",
