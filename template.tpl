@@ -10,7 +10,7 @@ ___INFO___
 
 {
   "displayName": "Facebook Pixel",
-  "__wm": "VGVtcGxhdGUtQXV0aG9yX0ZhY2Vib29rLVNpbW8tQWhhdmE=",
+  "__wm": "VGVtcGxhdGUtQXV0aG9yX0ZhY2Vib29rLVNpbW8tQWhhdmE\u003d",
   "description": "This is an unofficial Google Tag Manager template for the Facebook Pixel.",
   "securityGroups": [],
   "categories": [
@@ -191,7 +191,7 @@ ___TEMPLATE_PARAMETERS___
       }
     ],
     "simpleValueType": true,
-    "help": "If you set Consent Granted to <strong>false</strong>, the pixel will not send any hits until a tag is fired where Consent Granted is set to <strong>true</strong>. See <a href=\"https://developers.facebook.com/docs/facebook-pixel/implementation/gdpr/\">this article</a> for more information."
+    "help": "If you set Consent Granted to \u003cstrong\u003efalse\u003c/strong\u003e, the pixel will not send any hits until a tag is fired where Consent Granted is set to \u003cstrong\u003etrue\u003c/strong\u003e. See \u003ca href\u003d\"https://developers.facebook.com/docs/facebook-pixel/implementation/gdpr/\"\u003ethis article\u003c/a\u003e for more information."
   },
   {
     "simpleValueType": true,
@@ -353,7 +353,7 @@ ___TEMPLATE_PARAMETERS___
         "type": "TEXT"
       },
       {
-        "displayName": "Prefix predefined properties with the $ symbol. Custom properties can only consist of letters, numbers, hyphens, or underscores. See <a href=\"https://bit.ly/2WQ7gkb\">https://bit.ly/2WQ7gkb</a>.",
+        "displayName": "Prefix predefined properties with the $ symbol. Custom properties can only consist of letters, numbers, hyphens, or underscores. See \u003ca href\u003d\"https://bit.ly/2WQ7gkb\"\u003ehttps://bit.ly/2WQ7gkb\u003c/a\u003e.",
         "name": "userPropertyLabel",
         "type": "LABEL"
       },
@@ -423,10 +423,123 @@ ___TEMPLATE_PARAMETERS___
         "name": "disableAutoConfig",
         "checkboxText": "Disable Automatic Configuration",
         "type": "CHECKBOX"
+      },
+      {
+        "type": "CHECKBOX",
+        "name": "disablePushState",
+        "checkboxText": "Disable History Event Tracking",
+        "simpleValueType": true,
+        "help": "The Facebook Pixel tracks history events (pushState and replaceState) automatically as PageViews. Check this box to prevent the pixel from tracking such events automatically."
       }
     ]
   }
 ]
+
+
+___SANDBOXED_JS_FOR_WEB_TEMPLATE___
+
+const createQueue = require('createQueue');
+const callInWindow = require('callInWindow');
+const aliasInWindow = require('aliasInWindow');
+const copyFromWindow = require('copyFromWindow');
+const setInWindow = require('setInWindow');
+const injectScript = require('injectScript');
+const makeTableMap = require('makeTableMap');
+const getType = require('getType');
+const log = require('logToConsole');
+
+const initIds = copyFromWindow('_fbq_gtm_ids') || [];
+const pixelIds = data.pixelId;
+const standardEventNames = ['AddPaymentInfo', 'AddToCart', 'AddToWishlist', 'CompleteRegistration', 'Contact', 'CustomizeProduct', 'Donate', 'FindLocation', 'InitiateCheckout', 'Lead', 'PageView', 'Purchase', 'Schedule', 'Search', 'StartTrial', 'SubmitApplication', 'Subscribe', 'ViewContent'];
+
+// Helper method
+const mergeObj = (obj, obj2) => {
+  for (let key in obj2) {
+    if (obj2.hasOwnProperty(key)) {
+      obj[key] = obj2[key];
+    }
+  }
+  return obj;
+};
+
+// Utility function to use either fbq.queue[]
+// (if the FB SDK hasn't loaded yet), or fbq.callMethod()
+// if the SDK has loaded.
+const getFbq = () => {
+  // Return the existing 'fbq' global method if available
+  let fbq = copyFromWindow('fbq');
+  if (fbq) {
+    return fbq;
+  }
+  
+  // Initialize the 'fbq' global method to either use
+  // fbq.callMethod or fbq.queue)
+  setInWindow('fbq', function() {    
+    const callMethod = copyFromWindow('fbq.callMethod.apply');
+    if (callMethod) {           
+      callInWindow('fbq.callMethod.apply', null, arguments); 
+    } else {       
+      callInWindow('fbq.queue.push', arguments);
+    }
+  });
+  aliasInWindow('_fbq', 'fbq');
+  
+  // Create the fbq.queue
+  createQueue('fbq.queue');
+    
+  // Return the global 'fbq' method, created above
+  return copyFromWindow('fbq');
+};
+
+// Get reference to the global method
+const fbq = getFbq();
+
+// Build the fbq() command arguments
+const userProps = data.userPropertyList ? makeTableMap(data.userPropertyList, 'name', 'value') : {};
+const cidParams = data.advancedMatchingList ? makeTableMap(data.advancedMatchingList, 'name', 'value') : {};
+const objectProps = data.objectPropertyList ? makeTableMap(data.objectPropertyList, 'name', 'value') : {};
+const objectPropsFromVar = getType(data.objectPropertiesFromVariable) === 'object' ? data.objectPropertiesFromVariable : {};
+const finalObjectProps = mergeObj(objectPropsFromVar, objectProps);
+const eventName = data.eventName === 'custom' ? data.customEventName : (data.eventName === 'variable' ? data.variableEventName : data.standardEventName);
+const command = standardEventNames.indexOf(eventName) === -1 ? 'trackSingleCustom' : 'trackSingle';
+const uid = data.userId ? {uid: data.userId} : {};
+const initObj = mergeObj(uid, cidParams);
+const consent = data.consent === false ? 'revoke' : 'grant';
+
+fbq('consent', consent);
+
+// Handle multiple, comma-separated pixel IDs,
+// and initialize each ID if not done already.
+pixelIds.split(',').forEach(pixelId => {
+  if (initIds.indexOf(pixelId) === -1) {
+    
+    // If the user has chosen to disable automatic configuration
+    if (data.disableAutoConfig) {
+      fbq('set', 'autoConfig', false, pixelId);
+    }
+    
+    // If the user has chosen to disable pushState and replaceState tracking
+    if (data.disablePushState) {
+      setInWindow('fbq.disablePushState', true);
+    }  
+    
+    // Initialize pixel and store in global array
+    fbq('init', pixelId, initObj);
+    initIds.push(pixelId);
+    setInWindow('_fbq_gtm_ids', initIds, true);
+    
+    // If the user has added User Properties
+    if (data.userProperties) {
+      fbq('setUserProperties', pixelId, userProps);
+    }
+    
+  }
+
+  // Call the fbq() method with the parameters defined earlier
+  fbq(command, pixelId, eventName, finalObjectProps);
+});
+
+injectScript('https://connect.facebook.net/en_US/fbevents.js', data.gtmOnSuccess, data.gtmOnFailure, 'fbPixel');
 
 
 ___WEB_PERMISSIONS___
@@ -716,6 +829,45 @@ ___WEB_PERMISSIONS___
                     "boolean": false
                   }
                 ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "fbq.disablePushState"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  }
+                ]
               }
             ]
           }
@@ -774,107 +926,13 @@ ___WEB_PERMISSIONS___
 ]
 
 
-___SANDBOXED_JS_FOR_WEB_TEMPLATE___
+___TESTS___
 
-const createQueue = require('createQueue');
-const callInWindow = require('callInWindow');
-const aliasInWindow = require('aliasInWindow');
-const copyFromWindow = require('copyFromWindow');
-const setInWindow = require('setInWindow');
-const injectScript = require('injectScript');
-const makeTableMap = require('makeTableMap');
-const getType = require('getType');
-const log = require('logToConsole');
-
-const initIds = copyFromWindow('_fbq_gtm_ids') || [];
-const pixelIds = data.pixelId;
-const standardEventNames = ['AddPaymentInfo', 'AddToCart', 'AddToWishlist', 'CompleteRegistration', 'Contact', 'CustomizeProduct', 'Donate', 'FindLocation', 'InitiateCheckout', 'Lead', 'PageView', 'Purchase', 'Schedule', 'Search', 'StartTrial', 'SubmitApplication', 'Subscribe', 'ViewContent'];
-
-// Helper method
-const mergeObj = (obj, obj2) => {
-  for (let key in obj2) {
-    if (obj2.hasOwnProperty(key)) {
-      obj[key] = obj2[key];
-    }
-  }
-  return obj;
-};
-
-// Utility function to use either fbq.queue[]
-// (if the FB SDK hasn't loaded yet), or fbq.callMethod()
-// if the SDK has loaded.
-const getFbq = () => {
-  // Return the existing 'fbq' global method if available
-  let fbq = copyFromWindow('fbq');
-  if (fbq) {
-    return fbq;
-  }
-  
-  // Initialize the 'fbq' global method to either use
-  // fbq.callMethod or fbq.queue)
-  setInWindow('fbq', function() {    
-    const callMethod = copyFromWindow('fbq.callMethod.apply');
-    if (callMethod) {           
-      callInWindow('fbq.callMethod.apply', null, arguments); 
-    } else {       
-      callInWindow('fbq.queue.push', arguments);
-    }
-  });
-  aliasInWindow('_fbq', 'fbq');
-  
-  // Create the fbq.queue
-  createQueue('fbq.queue');
-    
-  // Return the global 'fbq' method, created above
-  return copyFromWindow('fbq');
-};
-
-// Get reference to the global method
-const fbq = getFbq();
-
-// Build the fbq() command arguments
-const userProps = data.userPropertyList ? makeTableMap(data.userPropertyList, 'name', 'value') : {};
-const cidParams = data.advancedMatchingList ? makeTableMap(data.advancedMatchingList, 'name', 'value') : {};
-const objectProps = data.objectPropertyList ? makeTableMap(data.objectPropertyList, 'name', 'value') : {};
-const objectPropsFromVar = getType(data.objectPropertiesFromVariable) === 'object' ? data.objectPropertiesFromVariable : {};
-const finalObjectProps = mergeObj(objectPropsFromVar, objectProps);
-const eventName = data.eventName === 'custom' ? data.customEventName : (data.eventName === 'variable' ? data.variableEventName : data.standardEventName);
-const command = standardEventNames.indexOf(eventName) === -1 ? 'trackSingleCustom' : 'trackSingle';
-const uid = data.userId ? {uid: data.userId} : {};
-const initObj = mergeObj(uid, cidParams);
-const consent = data.consent === false ? 'revoke' : 'grant';
-
-fbq('consent', consent);
-
-// Handle multiple, comma-separated pixel IDs,
-// and initialize each ID if not done already.
-pixelIds.split(',').forEach(pixelId => {
-  if (initIds.indexOf(pixelId) === -1) {
-    
-    // If the user has chosen to disable automatic configuration
-    if (data.disableAutoConfig) {
-      fbq('set', 'autoConfig', false, pixelId);
-    }
-    
-    // Initialize pixel and store in global array
-    fbq('init', pixelId, initObj);
-    initIds.push(pixelId);
-    setInWindow('_fbq_gtm_ids', initIds, true);
-    
-    // If the user has added User Properties
-    if (data.userProperties) {
-      fbq('setUserProperties', pixelId, userProps);
-    }
-    
-  }
-
-  // Call the fbq() method with the parameters defined earlier
-  fbq(command, pixelId, eventName, finalObjectProps);
-});
-
-injectScript('https://connect.facebook.net/en_US/fbevents.js', data.gtmOnSuccess, data.gtmOnFailure, 'fbPixel');
+scenarios: []
 
 
 ___NOTES___
 
 Created on 18/05/2019, 21:57:16
+
+
