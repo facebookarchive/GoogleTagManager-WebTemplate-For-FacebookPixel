@@ -2,11 +2,13 @@ homepage: "https://www.simoahava.com/"
 documentation: "https://www.simoahava.com/analytics/create-facebook-pixel-custom-tag-template/"
 versions:
   # Latest version
+  - sha: ccffe40987094419fffdee44a412ee60e26ff52e
+    changeNotes: Added option to disable automatic tracking of History events (pushState, replaceState)
+  # Older versions
   - sha: c3af0827b14488dd9c7ca297f5ab8d44525ea212
     changeNotes: |2
       Fixed country in Advanced Matching to use correct key.
       REMEMBER TO REVIEW THE TAG IF YOU USED COUNTRY!
-  # Older versions
   - sha: b5cc43efe1bdbb68039c6825e920e709c06149d5
     changeNotes: Fix bug where object properties were not correctly built.
   - sha: cd5ae96875fd9fa0b5eccfb0e575c73b522eb1d4
