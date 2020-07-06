@@ -242,48 +242,51 @@ ___TEMPLATE_PARAMETERS___
       {
         "type": "LABEL",
         "name": "dpoInfo",
-        "displayName": "Data Processing Options force this Facebook event to comply to regional regulations with regard to the processing and selling of user data. Read \u003ca href\u003d\"https://developers.facebook.com/docs/marketing-apis/data-processing-options\"\u003ethis\u003c/a\u003e for more information about how to configure this section. If you do not want to configure any Data Processing Options for this event, do not add any rows to the table below."
+        "displayName": "Data Processing Options force this Facebook event to comply to regional regulations with regard to the processing and selling of user data. Read \u003ca href\u003d\"https://developers.facebook.com/docs/marketing-apis/data-processing-options\"\u003ethis\u003c/a\u003e for more information about how to configure this section."
       },
       {
-        "type": "SIMPLE_TABLE",
-        "name": "dpoTable",
-        "simpleTableColumns": [
+        "type": "CHECKBOX",
+        "name": "dpoLDU",
+        "checkboxText": "Limited Data Use (LDU)",
+        "simpleValueType": true
+      },
+      {
+        "type": "TEXT",
+        "name": "dpoCountry",
+        "displayName": "Country",
+        "simpleValueType": true,
+        "defaultValue": 0,
+        "enablingConditions": [
           {
-            "defaultValue": "LDU",
-            "displayName": "Processing Option",
-            "name": "option",
-            "type": "SELECT",
-            "selectItems": [
-              {
-                "value": "LDU",
-                "displayValue": "Limited Data Use (LDU)"
-              }
-            ]
-          },
-          {
-            "defaultValue": "",
-            "displayName": "Country",
-            "name": "country",
-            "type": "TEXT",
-            "valueValidators": [
-              {
-                "type": "NUMBER"
-              }
-            ]
-          },
-          {
-            "defaultValue": "",
-            "displayName": "State",
-            "name": "state",
-            "type": "TEXT",
-            "valueValidators": [
-              {
-                "type": "NUMBER"
-              }
-            ]
+            "paramName": "dpoLDU",
+            "paramValue": true,
+            "type": "EQUALS"
           }
         ],
-        "newRowButtonText": "Add Option"
+        "valueValidators": [
+          {
+            "type": "NUMBER"
+          }
+        ]
+      },
+      {
+        "type": "TEXT",
+        "name": "dpoState",
+        "displayName": "State",
+        "simpleValueType": true,
+        "defaultValue": 0,
+        "enablingConditions": [
+          {
+            "paramName": "dpoLDU",
+            "paramValue": true,
+            "type": "EQUALS"
+          }
+        ],
+        "valueValidators": [
+          {
+            "type": "NUMBER"
+          }
+        ]
       }
     ]
   },
@@ -560,11 +563,8 @@ const fbq = getFbq();
 fbq('consent', consent);
 
  // Set Data Processing Options
-if (data.dpoTable && data.dpoTable.length) {
-  const ldu = data.dpoTable.filter(t => t.option === 'LDU').shift();
-  if (ldu) {
-    fbq('dataProcessingOptions', ['LDU'], makeNumber(ldu.country), makeNumber(ldu.state));
-  }
+if (data.dpoLDU) {
+  fbq('dataProcessingOptions', ['LDU'], makeNumber(data.dpoCountry), makeNumber(data.dpoState));
 } else {
   fbq('dataProcessingOptions', []);
 }
@@ -1081,7 +1081,9 @@ scenarios:
     assertApi('gtmOnSuccess').wasCalled();
 - name: DPO LDU set
   code: |-
-    mockData.dpoTable = [{option: 'LDU', country: '0', state: '0'}];
+    mockData.dpoLDU = true;
+    mockData.dpoCountry = '0';
+    mockData.dpoState = '0';
 
     mock('copyFromWindow', key => {
       if (key === 'fbq') return function() {
