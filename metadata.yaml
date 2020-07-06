@@ -2,11 +2,16 @@ homepage: "https://www.simoahava.com/"
 documentation: "https://www.simoahava.com/custom-templates/facebook-pixel"
 versions:
   # Latest version
+  - sha: 9cc46cfcfdd3ba7b1c9f9ffa853fe56055b9f985
+    changeNotes: |2
+      Removed deprecated User Properties option.
+      Added Data Processing Options.
+      Fixed bug with empty Advanced Matching list.
+  # Older versions
   - sha: ef005f12f5429183534e74e117365e02dac51cd0
     changeNotes: |2
       Added unit tests.
       Added Enhanced Ecommerce integration.
-  # Older versions
   - sha: ccffe40987094419fffdee44a412ee60e26ff52e
     changeNotes: Added option to disable automatic tracking of History events (pushState, replaceState)
   - sha: c3af0827b14488dd9c7ca297f5ab8d44525ea212
