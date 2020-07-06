@@ -2,11 +2,11 @@ homepage: "https://www.simoahava.com/"
 documentation: "https://www.simoahava.com/custom-templates/facebook-pixel"
 versions:
   # Latest version
-  - sha: 9cc46cfcfdd3ba7b1c9f9ffa853fe56055b9f985
+  - sha: d20c7af198f6c555c9327c8dfb67f1ebf8de816d
     changeNotes: |2
-      Removed deprecated User Properties option.
-      Added Data Processing Options.
-      Fixed bug with empty Advanced Matching list.
+      Remove deprecated User Properties option.
+      Add Data Processing Options.
+      Fix bug with empty Advanced Matching list.
   # Older versions
   - sha: ef005f12f5429183534e74e117365e02dac51cd0
     changeNotes: |2
