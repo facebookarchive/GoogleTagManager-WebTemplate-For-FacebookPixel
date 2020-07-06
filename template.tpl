@@ -234,10 +234,58 @@ ___TEMPLATE_PARAMETERS___
     "type": "CHECKBOX"
   },
   {
-    "simpleValueType": true,
-    "name": "userProperties",
-    "checkboxText": "Enable User Properties",
-    "type": "CHECKBOX"
+    "type": "GROUP",
+    "name": "dataProcessingOptionsGroup",
+    "displayName": "Data Processing Options",
+    "groupStyle": "ZIPPY_CLOSED",
+    "subParams": [
+      {
+        "type": "LABEL",
+        "name": "dpoInfo",
+        "displayName": "Data Processing Options force this Facebook event to comply to regional regulations with regard to the processing and selling of user data. Read \u003ca href\u003d\"https://developers.facebook.com/docs/marketing-apis/data-processing-options\"\u003ethis\u003c/a\u003e for more information about how to configure this section. If you do not want to configure any Data Processing Options for this event, do not add any rows to the table below."
+      },
+      {
+        "type": "SIMPLE_TABLE",
+        "name": "dpoTable",
+        "simpleTableColumns": [
+          {
+            "defaultValue": "LDU",
+            "displayName": "Processing Option",
+            "name": "option",
+            "type": "SELECT",
+            "selectItems": [
+              {
+                "value": "LDU",
+                "displayValue": "Limited Data Use (LDU)"
+              }
+            ]
+          },
+          {
+            "defaultValue": "",
+            "displayName": "Country",
+            "name": "country",
+            "type": "TEXT",
+            "valueValidators": [
+              {
+                "type": "NUMBER"
+              }
+            ]
+          },
+          {
+            "defaultValue": "",
+            "displayName": "State",
+            "name": "state",
+            "type": "TEXT",
+            "valueValidators": [
+              {
+                "type": "NUMBER"
+              }
+            ]
+          }
+        ],
+        "newRowButtonText": "Add Option"
+      }
+    ]
   },
   {
     "enablingConditions": [
@@ -373,90 +421,6 @@ ___TEMPLATE_PARAMETERS___
     ]
   },
   {
-    "enablingConditions": [
-      {
-        "paramName": "userProperties",
-        "type": "EQUALS",
-        "paramValue": true
-      }
-    ],
-    "displayName": "User Properties",
-    "name": "userPropertiesGroup",
-    "groupStyle": "ZIPPY_CLOSED",
-    "type": "GROUP",
-    "subParams": [
-      {
-        "valueValidators": [
-          {
-            "errorMessage": "You must provide a User ID",
-            "type": "NON_EMPTY"
-          }
-        ],
-        "displayName": "User ID",
-        "simpleValueType": true,
-        "name": "userId",
-        "type": "TEXT"
-      },
-      {
-        "displayName": "Prefix predefined properties with the $ symbol. Custom properties can only consist of letters, numbers, hyphens, or underscores. See \u003ca href\u003d\"https://bit.ly/2WQ7gkb\"\u003ehttps://bit.ly/2WQ7gkb\u003c/a\u003e.",
-        "name": "userPropertyLabel",
-        "type": "LABEL"
-      },
-      {
-        "valueValidators": [
-          {
-            "errorMessage": "You must add at least one user property.",
-            "type": "NON_EMPTY"
-          }
-        ],
-        "displayName": "",
-        "name": "userPropertyList",
-        "simpleTableColumns": [
-          {
-            "valueValidators": [
-              {
-                "args": [
-                  "^([^$]+|\\$(account_created_time|city|country|currency|gender|install_source|language_state|user_type|zipcode))$"
-                ],
-                "errorMessage": "Invalid predefined user property.",
-                "type": "REGEX"
-              },
-              {
-                "args": [
-                  "^\\$?[a-zA-Z0-9\\-_]+$"
-                ],
-                "errorMessage": "Invalid custom user property name.",
-                "type": "REGEX"
-              },
-              {
-                "args": [
-                  1,
-                  40
-                ],
-                "errorMessage": "Custom user property name too long (max. 40 characters).",
-                "type": "STRING_LENGTH"
-              }
-            ],
-            "defaultValue": "",
-            "displayName": "Property name",
-            "name": "name",
-            "isUnique": true,
-            "type": "TEXT",
-            "valueHint": ""
-          },
-          {
-            "defaultValue": "",
-            "displayName": "Property value",
-            "name": "value",
-            "type": "TEXT"
-          }
-        ],
-        "type": "SIMPLE_TABLE",
-        "newRowButtonText": "Add property"
-      }
-    ]
-  },
-  {
     "displayName": "More Settings",
     "name": "moreSettingsGroup",
     "groupStyle": "ZIPPY_CLOSED",
@@ -549,8 +513,7 @@ if (data.enhancedEcommerce) {
 }
 
 // Build the fbq() command arguments
-const userProps = data.userProperties && data.userPropertyList.length ? makeTableMap(data.userPropertyList, 'name', 'value') : {};
-const cidParams = data.advancedMatching && data.advancedMatchingList.length ? makeTableMap(data.advancedMatchingList, 'name', 'value') : {};
+const cidParams = data.advancedMatchingList && data.advancedMatchingList.length ? makeTableMap(data.advancedMatchingList, 'name', 'value') : {};
 const objectProps = data.objectPropertyList && data.objectPropertyList.length ? makeTableMap(data.objectPropertyList, 'name', 'value') : {};
 const objectPropsFromVar = getType(data.objectPropertiesFromVariable) === 'object' ? data.objectPropertiesFromVariable : {};
 const mergedObjectProps = mergeObj(objectPropsFromVar, objectProps);
@@ -596,6 +559,16 @@ const fbq = getFbq();
 
 fbq('consent', consent);
 
+ // Set Data Processing Options
+if (data.dpoTable && data.dpoTable.length) {
+  const ldu = data.dpoTable.filter(t => t.option === 'LDU').shift();
+  if (ldu) {
+    fbq('dataProcessingOptions', ['LDU'], makeNumber(ldu.country), makeNumber(ldu.state));
+  }
+} else {
+  fbq('dataProcessingOptions', []);
+}
+
 // Handle multiple, comma-separated pixel IDs,
 // and initialize each ID if not done already.
 pixelIds.split(',').forEach(pixelId => {
@@ -615,11 +588,6 @@ pixelIds.split(',').forEach(pixelId => {
     fbq('init', pixelId, initObj);
     initIds.push(pixelId);
     setInWindow('_fbq_gtm_ids', initIds, true);
-    
-    // If the user has added User Properties
-    if (data.userProperties) {
-      fbq('setUserProperties', pixelId, userProps);
-    }
     
   }
 
@@ -1087,14 +1055,12 @@ scenarios:
     assertApi('gtmOnSuccess').wasCalled();
 - name: makeTableMap called
   code: |-
-    mockData.userProperties = true;
     mockData.advancedMatching = true;
 
     // Call runCode to run the template's code.
     runCode(mockData);
 
     // Verify that the tag finished successfully.
-    assertApi('makeTableMap').wasCalledWith(mockData.userPropertyList, 'name', 'value');
     assertApi('makeTableMap').wasCalledWith(mockData.advancedMatchingList, 'name', 'value');
     assertApi('makeTableMap').wasCalledWith(mockData.objectPropertyList, 'name', 'value');
     assertApi('gtmOnSuccess').wasCalled();
@@ -1104,6 +1070,46 @@ scenarios:
       if (key === 'fbq') return function() {
         if (arguments[0] === 'consent') {
           assertThat(arguments[1], 'Consent set incorrectly').isEqualTo('grant');
+        }
+      };
+    });
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: DPO LDU set
+  code: |-
+    mockData.dpoTable = [{option: 'LDU', country: '0', state: '0'}];
+
+    mock('copyFromWindow', key => {
+      if (key === 'fbq') return function() {
+        if (arguments[0] === 'consent') {
+          assertThat(arguments[1], 'Consent set incorrectly').isEqualTo('grant');
+        }
+        if (arguments[0] === 'dataProcessingOptions') {
+          assertThat(arguments[1], 'LDU array value not set').isEqualTo(['LDU']);
+          assertThat(arguments[2], 'LDU country not set').isEqualTo(0);
+          assertThat(arguments[3], 'LDU state not set').isEqualTo(0);
+        }
+      };
+    });
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: DPO LDU not set
+  code: |-
+    mock('copyFromWindow', key => {
+      if (key === 'fbq') return function() {
+        if (arguments[0] === 'consent') {
+          assertThat(arguments[1], 'Consent set incorrectly').isEqualTo('grant');
+        }
+        if (arguments[0] === 'dataProcessingOptions') {
+          assertThat(arguments[1], 'DPO should be an empty array').isEqualTo([]);
         }
       };
     });
@@ -1129,27 +1135,22 @@ scenarios:
     assertApi('gtmOnSuccess').wasCalled();
 - name: Pixel IDs not set - run init process
   code: "let index = 0;\nlet count = 0;\nlet _fbq_gtm_ids;\n\nmockData.advancedMatching\
-    \ = true;\nmockData.userProperties = true;\nmockData.disableAutoConfig = true;\n\
-    mockData.disablePushState = true;\nmockData.userProperties = true;\n\nconst userProps\
-    \ = {\n  userprop1: 'userval1',\n  userprop2: 'userval2'\n};\n\nmock('setInWindow',\
-    \ (key, val) => {\n  if (key === 'fbq.disablePushState') count += 1;\n  if (key\
-    \ === '_fbq_gtm_ids') _fbq_gtm_ids = val;\n});\n\nconst initObj = {\n  ct: 'Helsinki',\n\
-    \  cn: 'Finland',\n  uid: 'u12345'\n};\n\nmock('copyFromWindow', key => {\n  if\
-    \ (key === 'fbq') return function() {\n    if (arguments[0] === 'set' && arguments[1]\
-    \ === 'autoConfig' && arguments[2] === false) {\n      assertThat(arguments[3],\
+    \ = true;\nmockData.disableAutoConfig = true;\nmockData.disablePushState = true;\n\
+    \nmock('setInWindow', (key, val) => {\n  if (key === 'fbq.disablePushState') count\
+    \ += 1;\n  if (key === '_fbq_gtm_ids') _fbq_gtm_ids = val;\n});\n\nconst initObj\
+    \ = {\n  ct: 'Helsinki',\n  cn: 'Finland',\n  uid: 'u12345'\n};\n\nmock('copyFromWindow',\
+    \ key => {\n  if (key === 'fbq') return function() {\n    if (arguments[0] ===\
+    \ 'set' && arguments[1] === 'autoConfig' && arguments[2] === false) {\n      assertThat(arguments[3],\
     \ 'autoConfig called with incorrect pixelId').isEqualTo(mockData.pixelId.split(',')[index]);\n\
     \    }\n    if (arguments[0] === 'init') {\n      assertThat(arguments[1], 'init\
     \ called with incorrect pixelId').isEqualTo(mockData.pixelId.split(',')[index]);\n\
     \      assertThat(arguments[2], 'init called with incorrect initObj').isEqualTo(initObj);\n\
-    \    }\n    if (arguments[0] === 'setUserProperties') {\n      assertThat(arguments[1],\
-    \ 'setUserProperties called with incorrect pixel ID').isEqualTo(mockData.pixelId.split(',')[index]);\n\
-    \      assertThat(arguments[2], 'setUserProperties called with invalid user property\
-    \ object').isEqualTo(userProps);\n      index += 1;\n    }  \n  };\n});\n\n//\
-    \ Call runCode to run the template's code.\nrunCode(mockData);\n\nassertThat(_fbq_gtm_ids,\
-    \ '_fbq_gtm_ids has incorrect contents').isEqualTo(mockData.pixelId.split(','));\n\
-    assertThat(index, 'init called incorrect number of times: ' + index).isEqualTo(2);\n\
-    assertThat(count, 'fbq.disablePushState called incorrect number of times: ' +\
-    \ count).isEqualTo(2);\n\n// Verify that the tag finished successfully.\nassertApi('gtmOnSuccess').wasCalled();"
+    \      index += 1;\n    } \n  };\n});\n\n// Call runCode to run the template's\
+    \ code.\nrunCode(mockData);\n\nassertThat(_fbq_gtm_ids, '_fbq_gtm_ids has incorrect\
+    \ contents').isEqualTo(mockData.pixelId.split(','));\nassertThat(index, 'init\
+    \ called incorrect number of times: ' + index).isEqualTo(2);\nassertThat(count,\
+    \ 'fbq.disablePushState called incorrect number of times: ' + count).isEqualTo(2);\n\
+    \n// Verify that the tag finished successfully.\nassertApi('gtmOnSuccess').wasCalled();"
 - name: Send standard event
   code: "const eventParams = {\n  prop1: 'val1',\n  prop2: 'val2'\n};\n\nlet index\
     \ = 0;\nmock('copyFromWindow', key => {\n  if (key === 'fbq') return function()\
@@ -1319,22 +1320,21 @@ scenarios:
     assertApi('gtmOnSuccess').wasCalled();"
 setup: "const mockData = {\n  pixelId: '12345,23456',\n  eventName: 'standard',\n\
   \  standardEventName: 'PageView',\n  customEventName: 'custom',\n  variableEventName:\
-  \ 'standard',\n  consent: true,\n  advancedMatching: false,\n  userProperties: false,\n\
-  \  advancedMatchingList: [{name: 'ct', value: 'Helsinki'},{name: 'cn', value: 'Finland'}],\n\
-  \  objectPropertiesFromVariable: false,\n  objectPropertyList: [{name: 'prop1',\
-  \ value: 'val1'},{name: 'prop2', value: 'val2'}],\n  userId: 'u12345',\n  userPropertyList:\
-  \ [{name: 'userprop1', value: 'userval1'},{name: 'userprop2', value: 'userval2'}],\n\
-  \  disableAutoConfig: false,\n  disablePushState: false,\n  enhancedEcommerce: false\n\
-  };\n\nconst mockEec = {\n  gtm: {  \n    products: [{\n      id: 'i1',\n      name:\
-  \ 'n1',\n      category: 'c1',\n      price: '1.00',\n      quantity: 1\n    },{\n\
-  \      id: 'i2',\n      name: 'n2',\n      category: 'c2',\n      price: '2.00',\n\
-  \      quantity: 2\n    }]\n  },\n  fb: {\n    content_type: 'product',\n    contents:\
-  \ [{\n      id: 'i1',\n      quantity: 1\n    },{\n      id: 'i2',\n      quantity:\
-  \ 2\n    }],\n    currency: 'EUR',\n    value: 5.00\n  }\n};\n\nconst scriptUrl\
-  \ = 'https://connect.facebook.net/en_US/fbevents.js';\n\n// Create injectScript\
-  \ mock\nlet success, failure;\nmock('injectScript', (url, onsuccess, onfailure)\
-  \ => {\n  success = onsuccess;\n  failure = onfailure;\n  onsuccess();\n});\n\n\
-  mock('copyFromWindow', key => {\n  if (key === 'fbq') return () => {};\n});"
+  \ 'standard',\n  consent: true,\n  advancedMatching: false,\n  advancedMatchingList:\
+  \ [{name: 'ct', value: 'Helsinki'},{name: 'cn', value: 'Finland'}],\n  objectPropertiesFromVariable:\
+  \ false,\n  objectPropertyList: [{name: 'prop1', value: 'val1'},{name: 'prop2',\
+  \ value: 'val2'}],\n  userId: 'u12345',\n  disableAutoConfig: false,\n  disablePushState:\
+  \ false,\n  enhancedEcommerce: false\n};\n\nconst mockEec = {\n  gtm: {  \n    products:\
+  \ [{\n      id: 'i1',\n      name: 'n1',\n      category: 'c1',\n      price: '1.00',\n\
+  \      quantity: 1\n    },{\n      id: 'i2',\n      name: 'n2',\n      category:\
+  \ 'c2',\n      price: '2.00',\n      quantity: 2\n    }]\n  },\n  fb: {\n    content_type:\
+  \ 'product',\n    contents: [{\n      id: 'i1',\n      quantity: 1\n    },{\n  \
+  \    id: 'i2',\n      quantity: 2\n    }],\n    currency: 'EUR',\n    value: 5.00\n\
+  \  }\n};\n\nconst scriptUrl = 'https://connect.facebook.net/en_US/fbevents.js';\n\
+  \n// Create injectScript mock\nlet success, failure;\nmock('injectScript', (url,\
+  \ onsuccess, onfailure) => {\n  success = onsuccess;\n  failure = onfailure;\n \
+  \ onsuccess();\n});\n\nmock('copyFromWindow', key => {\n  if (key === 'fbq') return\
+  \ () => {};\n});"
 
 
 ___NOTES___
