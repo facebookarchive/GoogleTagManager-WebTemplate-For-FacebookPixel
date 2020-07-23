@@ -364,7 +364,12 @@ ___TEMPLATE_PARAMETERS___
           }
         ],
         "type": "SIMPLE_TABLE",
-        "newRowButtonText": "Add parameter"
+        "newRowButtonText": "Add parameter",
+        "valueValidators": [
+          {
+            "type": "NON_EMPTY"
+          }
+        ]
       }
     ]
   },
