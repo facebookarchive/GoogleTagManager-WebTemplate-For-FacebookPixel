@@ -2,12 +2,14 @@ homepage: "https://www.simoahava.com/"
 documentation: "https://www.simoahava.com/custom-templates/facebook-pixel"
 versions:
   # Latest version
+  - sha: f21ffb21c9f9bfffcfd64bd7e6e9f84efc5d2b91
+    changeNotes: Do not allow empty table to be sent with Advanced Matching.
+  # Older versions
   - sha: d20c7af198f6c555c9327c8dfb67f1ebf8de816d
     changeNotes: |2
       Remove deprecated User Properties option.
       Add Data Processing Options.
       Fix bug with empty Advanced Matching list.
-  # Older versions
   - sha: ef005f12f5429183534e74e117365e02dac51cd0
     changeNotes: |2
       Added unit tests.
