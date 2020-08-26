@@ -2,9 +2,11 @@ homepage: "https://www.simoahava.com/"
 documentation: "https://www.simoahava.com/custom-templates/facebook-pixel"
 versions:
   # Latest version
+  - sha: 547cecfcd373f533b4d7f68f049a9662ec932e3a
+    changeNotes: Add agent string to help monitor template usage.
+  # Older versions
   - sha: f21ffb21c9f9bfffcfd64bd7e6e9f84efc5d2b91
     changeNotes: Do not allow empty table to be sent with Advanced Matching.
-  # Older versions
   - sha: d20c7af198f6c555c9327c8dfb67f1ebf8de816d
     changeNotes: |2
       Remove deprecated User Properties option.
