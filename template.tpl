@@ -587,7 +587,10 @@ pixelIds.split(',').forEach(pixelId => {
     // If the user has chosen to disable pushState and replaceState tracking
     if (data.disablePushState) {
       setInWindow('fbq.disablePushState', true);
-    }  
+    }
+   	
+    // Monitoring agent string for Tag Setup	
+    fbq('set','agent','tmgoogletagmanager-simowebtemplate', pixelId);
     
     // Initialize pixel and store in global array
     fbq('init', pixelId, initObj);
