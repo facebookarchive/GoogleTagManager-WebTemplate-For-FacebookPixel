@@ -1152,6 +1152,9 @@ scenarios:
     \ key => {\n  if (key === 'fbq') return function() {\n    if (arguments[0] ===\
     \ 'set' && arguments[1] === 'autoConfig' && arguments[2] === false) {\n      assertThat(arguments[3],\
     \ 'autoConfig called with incorrect pixelId').isEqualTo(mockData.pixelId.split(',')[index]);\n\
+    \    }\n    if (arguments[0] === 'set' && arguments[1] === 'agent') {\n      assertThat(arguments[2],\
+    \ 'agent set with invalid value').isEqualTo('tmgoogletagmanager-simowebtemplate');\n\
+    \      assertThat(arguments[3], 'agent set with invalid pixel ID').isEqualTo(mockData.pixelId.split(',')[index]);\n\
     \    }\n    if (arguments[0] === 'init') {\n      assertThat(arguments[1], 'init\
     \ called with incorrect pixelId').isEqualTo(mockData.pixelId.split(',')[index]);\n\
     \      assertThat(arguments[2], 'init called with incorrect initObj').isEqualTo(initObj);\n\
