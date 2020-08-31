@@ -570,8 +570,6 @@ fbq('consent', consent);
  // Set Data Processing Options
 if (data.dpoLDU) {
   fbq('dataProcessingOptions', ['LDU'], makeNumber(data.dpoCountry), makeNumber(data.dpoState));
-} else {
-  fbq('dataProcessingOptions', []);
 }
 
 // Handle multiple, comma-separated pixel IDs,
