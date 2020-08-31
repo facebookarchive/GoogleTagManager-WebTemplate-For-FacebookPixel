@@ -1119,7 +1119,7 @@ scenarios:
           assertThat(arguments[1], 'Consent set incorrectly').isEqualTo('grant');
         }
         if (arguments[0] === 'dataProcessingOptions') {
-          assertThat(arguments[1], 'DPO should be an empty array').isEqualTo([]);
+          fail('dataProcessingOptions called even though DPO was not set');
         }
       };
     });
@@ -1153,17 +1153,16 @@ scenarios:
     \ 'set' && arguments[1] === 'autoConfig' && arguments[2] === false) {\n      assertThat(arguments[3],\
     \ 'autoConfig called with incorrect pixelId').isEqualTo(mockData.pixelId.split(',')[index]);\n\
     \    }\n    if (arguments[0] === 'set' && arguments[1] === 'agent') {\n      assertThat(arguments[2],\
-    \ 'agent set with invalid value').isEqualTo('tmSimo-GTM-WebTemplate');\n\
-    \      assertThat(arguments[3], 'agent set with invalid pixel ID').isEqualTo(mockData.pixelId.split(',')[index]);\n\
-    \    }\n    if (arguments[0] === 'init') {\n      assertThat(arguments[1], 'init\
-    \ called with incorrect pixelId').isEqualTo(mockData.pixelId.split(',')[index]);\n\
+    \ 'agent set with invalid value').isEqualTo('tmSimo-GTM-WebTemplate');\n     \
+    \ assertThat(arguments[3], 'agent set with invalid pixel ID').isEqualTo(mockData.pixelId.split(',')[index]);\n\
+    \      index += 1;\n    }\n    if (arguments[0] === 'init') {\n      assertThat(arguments[1],\
+    \ 'init called with incorrect pixelId').isEqualTo(mockData.pixelId.split(',')[index]);\n\
     \      assertThat(arguments[2], 'init called with incorrect initObj').isEqualTo(initObj);\n\
-    \      index += 1;\n    } \n  };\n});\n\n// Call runCode to run the template's\
-    \ code.\nrunCode(mockData);\n\nassertThat(_fbq_gtm_ids, '_fbq_gtm_ids has incorrect\
-    \ contents').isEqualTo(mockData.pixelId.split(','));\nassertThat(index, 'init\
-    \ called incorrect number of times: ' + index).isEqualTo(2);\nassertThat(count,\
-    \ 'fbq.disablePushState called incorrect number of times: ' + count).isEqualTo(2);\n\
-    \n// Verify that the tag finished successfully.\nassertApi('gtmOnSuccess').wasCalled();"
+    \    } \n  };\n});\n\n// Call runCode to run the template's code.\nrunCode(mockData);\n\
+    \nassertThat(_fbq_gtm_ids, '_fbq_gtm_ids has incorrect contents').isEqualTo(mockData.pixelId.split(','));\n\
+    assertThat(index, 'init called incorrect number of times: ' + index).isEqualTo(2);\n\
+    assertThat(count, 'fbq.disablePushState called incorrect number of times: ' +\
+    \ count).isEqualTo(2);\n\n// Verify that the tag finished successfully.\nassertApi('gtmOnSuccess').wasCalled();"
 - name: Send standard event
   code: "const eventParams = {\n  prop1: 'val1',\n  prop2: 'val2'\n};\n\nlet index\
     \ = 0;\nmock('copyFromWindow', key => {\n  if (key === 'fbq') return function()\
