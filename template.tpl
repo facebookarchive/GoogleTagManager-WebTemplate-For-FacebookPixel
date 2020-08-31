@@ -589,11 +589,13 @@ pixelIds.split(',').forEach(pixelId => {
       setInWindow('fbq.disablePushState', true);
     }
    	
-    // Monitoring agent string for Tag Setup	
-    fbq('set','agent','tmgoogletagmanager-simowebtemplate', pixelId);
     
     // Initialize pixel and store in global array
     fbq('init', pixelId, initObj);
+
+    // Monitoring agent string for Tag Setup
+    fbq('set','agent','tmSimo-GTM-WebTemplate', pixelId);
+
     initIds.push(pixelId);
     setInWindow('_fbq_gtm_ids', initIds, true);
     
@@ -1153,7 +1155,7 @@ scenarios:
     \ 'set' && arguments[1] === 'autoConfig' && arguments[2] === false) {\n      assertThat(arguments[3],\
     \ 'autoConfig called with incorrect pixelId').isEqualTo(mockData.pixelId.split(',')[index]);\n\
     \    }\n    if (arguments[0] === 'set' && arguments[1] === 'agent') {\n      assertThat(arguments[2],\
-    \ 'agent set with invalid value').isEqualTo('tmgoogletagmanager-simowebtemplate');\n\
+    \ 'agent set with invalid value').isEqualTo('tmSimo-GTM-WebTemplate');\n\
     \      assertThat(arguments[3], 'agent set with invalid pixel ID').isEqualTo(mockData.pixelId.split(',')[index]);\n\
     \    }\n    if (arguments[0] === 'init') {\n      assertThat(arguments[1], 'init\
     \ called with incorrect pixelId').isEqualTo(mockData.pixelId.split(',')[index]);\n\
