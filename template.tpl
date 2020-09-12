@@ -326,6 +326,10 @@ ___TEMPLATE_PARAMETERS___
                 "value": "em"
               },
               {
+                "displayValue": "External ID",
+                "value": "external_id"
+              },
+              {
                 "displayValue": "First Name",
                 "value": "fn"
               },
@@ -529,8 +533,6 @@ const finalObjectProps = mergeObj(eecObjectProps || {}, mergedObjectProps);
 eventName = eventName || (data.eventName === 'custom' ? data.customEventName : (data.eventName === 'variable' ? data.variableEventName : data.standardEventName));
 
 const command = standardEventNames.indexOf(eventName) === -1 ? 'trackSingleCustom' : 'trackSingle';
-const uid = data.userId ? {uid: data.userId} : {};
-const initObj = mergeObj(uid, cidParams);
 const consent = data.consent === false ? 'revoke' : 'grant';
 
 // Utility function to use either fbq.queue[]
@@ -589,7 +591,7 @@ pixelIds.split(',').forEach(pixelId => {
    	
     
     // Initialize pixel and store in global array
-    fbq('init', pixelId, initObj);
+    fbq('init', pixelId, cidParams);
 
     // Monitoring agent string for Tag Setup
     fbq('set','agent','tmSimo-GTM-WebTemplate', pixelId);
@@ -1148,7 +1150,7 @@ scenarios:
     \ = true;\nmockData.disableAutoConfig = true;\nmockData.disablePushState = true;\n\
     \nmock('setInWindow', (key, val) => {\n  if (key === 'fbq.disablePushState') count\
     \ += 1;\n  if (key === '_fbq_gtm_ids') _fbq_gtm_ids = val;\n});\n\nconst initObj\
-    \ = {\n  ct: 'Helsinki',\n  cn: 'Finland',\n  uid: 'u12345'\n};\n\nmock('copyFromWindow',\
+    \ = {\n  ct: 'Helsinki',\n  cn: 'Finland',\n  external_id: 'UserId'\n};\n\nmock('copyFromWindow',\
     \ key => {\n  if (key === 'fbq') return function() {\n    if (arguments[0] ===\
     \ 'set' && arguments[1] === 'autoConfig' && arguments[2] === false) {\n      assertThat(arguments[3],\
     \ 'autoConfig called with incorrect pixelId').isEqualTo(mockData.pixelId.split(',')[index]);\n\
@@ -1333,16 +1335,16 @@ scenarios:
 setup: "const mockData = {\n  pixelId: '12345,23456',\n  eventName: 'standard',\n\
   \  standardEventName: 'PageView',\n  customEventName: 'custom',\n  variableEventName:\
   \ 'standard',\n  consent: true,\n  advancedMatching: false,\n  advancedMatchingList:\
-  \ [{name: 'ct', value: 'Helsinki'},{name: 'cn', value: 'Finland'}],\n  objectPropertiesFromVariable:\
-  \ false,\n  objectPropertyList: [{name: 'prop1', value: 'val1'},{name: 'prop2',\
-  \ value: 'val2'}],\n  userId: 'u12345',\n  disableAutoConfig: false,\n  disablePushState:\
-  \ false,\n  enhancedEcommerce: false\n};\n\nconst mockEec = {\n  gtm: {  \n    products:\
-  \ [{\n      id: 'i1',\n      name: 'n1',\n      category: 'c1',\n      price: '1.00',\n\
-  \      quantity: 1\n    },{\n      id: 'i2',\n      name: 'n2',\n      category:\
-  \ 'c2',\n      price: '2.00',\n      quantity: 2\n    }]\n  },\n  fb: {\n    content_type:\
-  \ 'product',\n    contents: [{\n      id: 'i1',\n      quantity: 1\n    },{\n  \
-  \    id: 'i2',\n      quantity: 2\n    }],\n    currency: 'EUR',\n    value: 5.00\n\
-  \  }\n};\n\nconst scriptUrl = 'https://connect.facebook.net/en_US/fbevents.js';\n\
+  \ [{name: 'ct', value: 'Helsinki'},{name: 'cn', value: 'Finland'},{name: 'external_id',\
+  \ value: 'UserId'}],\n  objectPropertiesFromVariable: false,\n  objectPropertyList:\
+  \ [{name: 'prop1', value: 'val1'},{name: 'prop2', value: 'val2'}],\n  disableAutoConfig:\
+  \ false,\n  disablePushState: false,\n  enhancedEcommerce: false\n};\n\nconst mockEec\
+  \ = {\n  gtm: {  \n    products: [{\n      id: 'i1',\n      name: 'n1',\n      category:\
+  \ 'c1',\n      price: '1.00',\n      quantity: 1\n    },{\n      id: 'i2',\n   \
+  \   name: 'n2',\n      category: 'c2',\n      price: '2.00',\n      quantity: 2\n\
+  \    }]\n  },\n  fb: {\n    content_type: 'product',\n    contents: [{\n      id:\
+  \ 'i1',\n      quantity: 1\n    },{\n      id: 'i2',\n      quantity: 2\n    }],\n\
+  \    currency: 'EUR',\n    value: 5.00\n  }\n};\n\nconst scriptUrl = 'https://connect.facebook.net/en_US/fbevents.js';\n\
   \n// Create injectScript mock\nlet success, failure;\nmock('injectScript', (url,\
   \ onsuccess, onfailure) => {\n  success = onsuccess;\n  failure = onfailure;\n \
   \ onsuccess();\n});\n\nmock('copyFromWindow', key => {\n  if (key === 'fbq') return\
