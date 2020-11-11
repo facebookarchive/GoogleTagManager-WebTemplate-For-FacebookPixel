@@ -451,6 +451,13 @@ ___TEMPLATE_PARAMETERS___
         "checkboxText": "Disable History Event Tracking",
         "simpleValueType": true,
         "help": "The Facebook Pixel tracks history events (pushState and replaceState) automatically as PageViews. Check this box to prevent the pixel from tracking such events automatically."
+      },
+      {
+        "type": "TEXT",
+        "name": "eventId",
+        "displayName": "Event ID",
+        "simpleValueType": true,
+        "help": "Set the Event ID parameter in case you are tracking the same event server-side as well. The Event ID can be used to deduplicate the same event if sent from multiple sources. See more \u003ca href\u003d\"https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events/\"\u003ehere\u003c/a\u003e."
       }
     ]
   }
@@ -602,7 +609,11 @@ pixelIds.split(',').forEach(pixelId => {
   }
 
   // Call the fbq() method with the parameters defined earlier
-  fbq(command, pixelId, eventName, finalObjectProps);
+  if (data.eventId) {
+    fbq(command, pixelId, eventName, finalObjectProps, {eventID: data.eventId});
+  } else {
+    fbq(command, pixelId, eventName, finalObjectProps);
+  }
 });
 
 injectScript('https://connect.facebook.net/en_US/fbevents.js', data.gtmOnSuccess, data.gtmOnFailure, 'fbPixel');
@@ -1332,23 +1343,30 @@ scenarios:
     \ code.\nrunCode(mockData);\n\n// Verify that the tag finished successfully.\n\
     assertThat(index, 'trackSingle called incorrect number of times').isEqualTo(2);\n\
     assertApi('gtmOnSuccess').wasCalled();"
+- name: Send event ID
+  code: "mockData.eventId = 'eventId';\n\nmock('copyFromWindow', key => {\n  if (key\
+    \ === 'fbq') return function() {\n    if (arguments[0] === 'trackSingle') {\n\
+    \      assertThat(arguments[4], 'eventID not included in hit').isEqualTo({eventID:\
+    \ mockData.eventId});\n    }\n  };\n});\n     \n// Call runCode to run the template's\
+    \ code.\nrunCode(mockData);\n\n// Verify that the tag finished successfully.\n\
+    assertApi('gtmOnSuccess').wasCalled();"
 setup: "const mockData = {\n  pixelId: '12345,23456',\n  eventName: 'standard',\n\
   \  standardEventName: 'PageView',\n  customEventName: 'custom',\n  variableEventName:\
   \ 'standard',\n  consent: true,\n  advancedMatching: false,\n  advancedMatchingList:\
   \ [{name: 'ct', value: 'Helsinki'},{name: 'cn', value: 'Finland'},{name: 'external_id',\
   \ value: 'UserId'}],\n  objectPropertiesFromVariable: false,\n  objectPropertyList:\
   \ [{name: 'prop1', value: 'val1'},{name: 'prop2', value: 'val2'}],\n  disableAutoConfig:\
-  \ false,\n  disablePushState: false,\n  enhancedEcommerce: false\n};\n\nconst mockEec\
-  \ = {\n  gtm: {  \n    products: [{\n      id: 'i1',\n      name: 'n1',\n      category:\
-  \ 'c1',\n      price: '1.00',\n      quantity: 1\n    },{\n      id: 'i2',\n   \
-  \   name: 'n2',\n      category: 'c2',\n      price: '2.00',\n      quantity: 2\n\
-  \    }]\n  },\n  fb: {\n    content_type: 'product',\n    contents: [{\n      id:\
-  \ 'i1',\n      quantity: 1\n    },{\n      id: 'i2',\n      quantity: 2\n    }],\n\
-  \    currency: 'EUR',\n    value: 5.00\n  }\n};\n\nconst scriptUrl = 'https://connect.facebook.net/en_US/fbevents.js';\n\
-  \n// Create injectScript mock\nlet success, failure;\nmock('injectScript', (url,\
-  \ onsuccess, onfailure) => {\n  success = onsuccess;\n  failure = onfailure;\n \
-  \ onsuccess();\n});\n\nmock('copyFromWindow', key => {\n  if (key === 'fbq') return\
-  \ () => {};\n});"
+  \ false,\n  disablePushState: false,\n  enhancedEcommerce: false,\n  eventId: ''\n\
+  };\n\nconst mockEec = {\n  gtm: {  \n    products: [{\n      id: 'i1',\n      name:\
+  \ 'n1',\n      category: 'c1',\n      price: '1.00',\n      quantity: 1\n    },{\n\
+  \      id: 'i2',\n      name: 'n2',\n      category: 'c2',\n      price: '2.00',\n\
+  \      quantity: 2\n    }]\n  },\n  fb: {\n    content_type: 'product',\n    contents:\
+  \ [{\n      id: 'i1',\n      quantity: 1\n    },{\n      id: 'i2',\n      quantity:\
+  \ 2\n    }],\n    currency: 'EUR',\n    value: 5.00\n  }\n};\n\nconst scriptUrl\
+  \ = 'https://connect.facebook.net/en_US/fbevents.js';\n\n// Create injectScript\
+  \ mock\nlet success, failure;\nmock('injectScript', (url, onsuccess, onfailure)\
+  \ => {\n  success = onsuccess;\n  failure = onfailure;\n  onsuccess();\n});\n\n\
+  mock('copyFromWindow', key => {\n  if (key === 'fbq') return () => {};\n});"
 
 
 ___NOTES___
