@@ -502,7 +502,10 @@ const mergeObj = (obj, obj2) => {
 const parseEecObj = prod => {
   return {
     id: prod.id,
-    quantity: prod.quantity
+    quantity: (prod.quantity || 1),
+    title: prod.name,
+    item_price: prod.price,
+    category: prod.category
   };
 };
 
@@ -1361,12 +1364,14 @@ setup: "const mockData = {\n  pixelId: '12345,23456',\n  eventName: 'standard',\
   \ 'n1',\n      category: 'c1',\n      price: '1.00',\n      quantity: 1\n    },{\n\
   \      id: 'i2',\n      name: 'n2',\n      category: 'c2',\n      price: '2.00',\n\
   \      quantity: 2\n    }]\n  },\n  fb: {\n    content_type: 'product',\n    contents:\
-  \ [{\n      id: 'i1',\n      quantity: 1\n    },{\n      id: 'i2',\n      quantity:\
-  \ 2\n    }],\n    currency: 'EUR',\n    value: 5.00\n  }\n};\n\nconst scriptUrl\
-  \ = 'https://connect.facebook.net/en_US/fbevents.js';\n\n// Create injectScript\
-  \ mock\nlet success, failure;\nmock('injectScript', (url, onsuccess, onfailure)\
-  \ => {\n  success = onsuccess;\n  failure = onfailure;\n  onsuccess();\n});\n\n\
-  mock('copyFromWindow', key => {\n  if (key === 'fbq') return () => {};\n});"
+  \ [{\n      id: 'i1',\n      quantity: 1,\n      title: 'n1',\n      item_price:\
+  \ '1.00',\n      category: 'c1'\n    },{\n      id: 'i2',\n      quantity: 2,\n\
+  \      title: 'n2',\n      item_price: '2.00',\n      category: 'c2'\n    }],\n\
+  \    currency: 'EUR',\n    value: 5.00\n  }\n};\n\nconst scriptUrl = 'https://connect.facebook.net/en_US/fbevents.js';\n\
+  \n// Create injectScript mock\nlet success, failure;\nmock('injectScript', (url,\
+  \ onsuccess, onfailure) => {\n  success = onsuccess;\n  failure = onfailure;\n \
+  \ onsuccess();\n});\n\nmock('copyFromWindow', key => {\n  if (key === 'fbq') return\
+  \ () => {};\n});"
 
 
 ___NOTES___
