@@ -540,7 +540,7 @@ const finalObjectProps = mergeObj(eecObjectProps || {}, mergedObjectProps);
 eventName = eventName || (data.eventName === 'custom' ? data.customEventName : (data.eventName === 'variable' ? data.variableEventName : data.standardEventName));
 
 const command = standardEventNames.indexOf(eventName) === -1 ? 'trackSingleCustom' : 'trackSingle';
-const consent = data.consent === false ? 'revoke' : 'grant';
+const consent = data.consent === false || data.consent === 'false' ? 'revoke' : 'grant';
 
 // Utility function to use either fbq.queue[]
 // (if the FB SDK hasn't loaded yet), or fbq.callMethod()
