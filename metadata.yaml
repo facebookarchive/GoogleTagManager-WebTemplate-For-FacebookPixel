@@ -2,9 +2,11 @@ homepage: "https://www.simoahava.com/"
 documentation: "https://www.simoahava.com/custom-templates/facebook-pixel"
 versions:
   # Latest version
+  - sha: 5df60e6e0fcad24ca16198b68a2ca2255e6da53f
+    changeNotes: Support passing consent state as string as well as Boolean.
+  # Older versions
   - sha: 11c004614f6b8f7cc999caabef521086116ce302
     changeNotes: Added Event ID to pixel fields for server-side deduplication.
-  # Older versions
   - sha: 6eab67135d4e8b6052332e9b52dcb3d7e88b5b2c
     changeNotes: Added External ID to Advanced Matching. It replaces the deprecated User ID.
   - sha: b676921cf6cdf73c868fef2cc5cfd564bdeaf95f
